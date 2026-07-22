@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0B">
+<title>Officer Field Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Officer Field Reference — shared design system
+   Gold-on-black. Mobile-first. No external deps beyond fonts.
+   ============================================================ */
+:root{
+  --bg:#0A0A0B; --panel:#141417; --panel-2:#1B1B1F;
+  --line:rgba(201,162,75,.16); --line-strong:rgba(201,162,75,.34);
+  --text:#EAE7DF; --muted:#8B897F;
+  --gold:#C9A24B; --gold-bright:#E4BE58;
+  --red:#C4342E; --red-bright:#E0453E;
+  --green:#6FA96B; --amber:#D9A441;
+  --radius:12px; --tap:52px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:"Barlow",system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  padding:0 0 env(safe-area-inset-bottom);
+}
+a{color:var(--gold-bright)}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px}
+
+/* content hidden until gate unlocks (JS sets data-unlocked on <html>) */
+html:not([data-unlocked]) .app{display:none}
+
+/* ---------- HEADER ---------- */
+header{padding:16px 0 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;flex:0 0 40px;border:1.5px solid var(--gold);border-radius:8px;
+  display:grid;place-items:center;color:var(--gold)}
+.mark svg{width:22px;height:22px}
+.title h1{margin:0;font-family:"Barlow Condensed";font-weight:700;font-size:21px;
+  letter-spacing:.6px;text-transform:uppercase;line-height:1}
+.title p{margin:3px 0 0;font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+.title .badge{color:var(--gold);font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.5px}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-family:"Barlow Condensed";
+  font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:13px;text-decoration:none;
+  color:var(--muted);padding:10px 0}
+.backlink svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- EMERGENCY STRIP ---------- */
+.hud{position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0;
+  border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hud a{display:flex;flex-direction:column;justify-content:center;min-height:var(--tap);
+  text-decoration:none;border-radius:10px;padding:6px 8px;text-align:center;
+  border:1px solid var(--line-strong);color:var(--text);background:var(--panel)}
+.hud a .k{font-family:"Barlow Condensed";font-weight:700;font-size:19px;letter-spacing:.5px;line-height:1}
+.hud a .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:3px}
+.hud a.crit{border-color:rgba(196,52,46,.55);background:rgba(196,52,46,.12)}
+.hud a.crit .k{color:var(--red-bright)} .hud a.crit .l{color:#c99}
+.hud a.gold .k{color:var(--gold-bright)}
+.hud a:active{transform:scale(.97)}
+
+/* ---------- SEARCH ---------- */
+.search{margin:12px 0 4px;position:relative}
+.search input{width:100%;min-height:46px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:0 14px 0 40px;
+  font-family:"Barlow";font-size:15px;outline:none}
+.search input:focus{border-color:var(--line-strong)}
+.search input::placeholder{color:var(--muted)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted)}
+.toolsbar{display:flex;justify-content:flex-end;padding:6px 2px 2px}
+.toolsbar button{background:none;border:none;color:var(--gold);font-family:"JetBrains Mono";
+  font-size:11px;letter-spacing:.4px;cursor:pointer;padding:6px 4px}
+
+/* ---------- SECTIONS ---------- */
+.section{margin:10px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+.section>summary{list-style:none;cursor:pointer;min-height:var(--tap);display:flex;align-items:center;gap:12px;padding:12px 14px}
+.section>summary::-webkit-details-marker{display:none}
+.section>summary .idx{font-family:"JetBrains Mono";font-size:12px;color:var(--gold);
+  border:1px solid var(--line-strong);border-radius:6px;padding:3px 6px;flex:0 0 auto}
+.section>summary .nm{font-family:"Barlow Condensed";font-weight:600;font-size:18px;
+  letter-spacing:.5px;text-transform:uppercase;flex:1}
+.section>summary .cnt{font-family:"JetBrains Mono";font-size:11px;color:var(--muted)}
+.section>summary .chev{width:16px;height:16px;stroke:var(--muted);transition:transform .2s;flex:0 0 auto}
+.section[open]>summary .chev{transform:rotate(90deg)}
+.section[open]>summary{border-bottom:1px solid var(--line)}
+.section-body{padding:6px 10px 12px}
+.grp{font-family:"Barlow Condensed";font-weight:600;font-size:12.5px;text-transform:uppercase;
+  letter-spacing:1.2px;color:var(--gold);padding:12px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.grp:first-child{padding-top:4px}
+
+/* ---------- ENTRY ---------- */
+.entry{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:11px 12px;margin:7px 0}
+.entry .top{display:flex;align-items:baseline;gap:8px}
+.entry .name{font-weight:600;font-size:15.5px;flex:1;line-height:1.25}
+.entry .tag{font-family:"JetBrains Mono";font-size:9.5px;letter-spacing:.5px;color:var(--gold);
+  border:1px solid var(--line-strong);border-radius:4px;padding:2px 5px;text-transform:uppercase;white-space:nowrap}
+.entry .tag.set{color:var(--muted);border-style:dashed;border-color:var(--muted)}
+.entry .meta{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.act{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;border-radius:8px;
+  text-decoration:none;font-family:"Barlow Condensed";font-weight:600;font-size:14px;letter-spacing:.5px;
+  text-transform:uppercase;border:1px solid var(--line-strong);color:var(--gold-bright);background:rgba(201,162,75,.07);cursor:pointer}
+.act svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.act:active{transform:scale(.97)}
+.act.call{color:#e7d29a} .act.dial911{color:var(--red-bright);border-color:rgba(196,52,46,.5);background:rgba(196,52,46,.1)}
+.act.set{color:var(--muted);border-style:dashed;border-color:var(--muted);background:none}
+.act.doc{color:#cfd6c9;border-color:rgba(160,180,150,.3)}
+
+/* ---------- NOTE / FOOTER ---------- */
+.note{font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;margin:14px 0;line-height:1.5}
+.note.warn{border-left-color:var(--red)}
+.note b{color:var(--text);font-weight:600}
+footer{padding:18px 4px 28px;color:var(--muted);font-size:11.5px;line-height:1.6;border-top:1px solid var(--line);margin-top:14px}
+footer .row{display:flex;justify-content:space-between;gap:10px;font-family:"JetBrains Mono"}
+.noresult{display:none;text-align:center;color:var(--muted);padding:24px;font-size:14px}
+
+/* ============================================================
+   PIN GATE
+   ============================================================ */
+#gate{position:fixed;inset:0;z-index:9999;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:22px}
+html[data-unlocked] #gate{display:none}
+#gate .g-mark{width:56px;height:56px;border:1.5px solid var(--gold);border-radius:12px;
+  display:grid;place-items:center;color:var(--gold)}
+#gate .g-mark svg{width:30px;height:30px}
+#gate h2{margin:0;font-family:"Barlow Condensed";font-weight:700;font-size:18px;
+  letter-spacing:1.4px;text-transform:uppercase;color:var(--text)}
+#gate .g-sub{margin:-14px 0 0;font-size:12px;color:var(--muted);letter-spacing:.4px}
+.dots{display:flex;gap:14px}
+.dots i{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);background:transparent;transition:all .15s}
+.dots i.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(201,162,75,.5)}
+.dots.err i{border-color:var(--red);animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:270px}
+.keypad button{min-height:64px;font-family:"Barlow Condensed";font-weight:600;font-size:26px;color:var(--text);
+  background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;cursor:pointer}
+.keypad button:active{background:var(--panel-2);transform:scale(.96)}
+.keypad button.ghost{background:transparent;border-color:transparent;color:var(--muted);font-size:15px;font-family:"Barlow Condensed";letter-spacing:.5px}
+.keypad button svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:2}
+#gate .g-foot{font-size:11px;color:var(--muted);text-align:center;max-width:280px;line-height:1.5}
+
+/* ============================================================
+   INVENTORY
+   ============================================================ */
+.kit-hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.kit-tile{display:flex;flex-direction:column;gap:6px;min-height:88px;justify-content:center;
+  text-decoration:none;color:var(--text);background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:14px 13px}
+.kit-tile:active{transform:scale(.98)}
+.kit-tile .kt-n{font-family:"Barlow Condensed";font-weight:600;font-size:16px;line-height:1.1;text-transform:uppercase;letter-spacing:.4px}
+.kit-tile .kt-c{font-family:"JetBrains Mono";font-size:10.5px;color:var(--muted)}
+.kit-tile.warn{border-color:rgba(196,52,46,.4)}
+
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-family:"Barlow Condensed";font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.field input,.field select{min-height:44px;background:var(--panel);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:0 12px;font-family:"Barlow";font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--line-strong)}
+
+.progress{display:flex;gap:8px;flex-wrap:wrap;font-family:"JetBrains Mono";font-size:11px;margin:6px 0 4px}
+.progress span{padding:4px 8px;border-radius:6px;border:1px solid var(--line)}
+.progress .ok{color:var(--green)} .progress .low{color:var(--amber)} .progress .bad{color:var(--red-bright)}
+
+.item{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:10px 11px;margin:7px 0}
+.item .ln1{display:flex;align-items:baseline;gap:9px}
+.item .num{font-family:"JetBrains Mono";font-size:11px;color:var(--muted);flex:0 0 auto;min-width:20px}
+.item .inm{font-weight:600;font-size:15px;flex:1;line-height:1.2}
+.item .last{font-family:"JetBrains Mono";font-size:11px;color:var(--muted);white-space:nowrap}
+.item .row2{display:grid;grid-template-columns:84px 1fr 118px;gap:8px;margin-top:9px}
+.item .row2 input,.item .row2 select{min-height:42px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;padding:0 9px;font-family:"Barlow";font-size:14px;outline:none;width:100%}
+.item .row2 .cnt{text-align:center;font-family:"JetBrains Mono";font-size:16px}
+.item textarea{width:100%;margin-top:8px;min-height:0;height:40px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;padding:9px;font-family:"Barlow";font-size:13.5px;outline:none;resize:vertical}
+.item[data-st="EXPIRED"],.item[data-st="MISSING"]{border-color:rgba(196,52,46,.45)}
+.item[data-st="LOW"]{border-color:rgba(217,164,65,.45)}
+.item[data-st="OK"]{border-color:rgba(111,169,107,.35)}
+select.st-EXPIRED,select.st-MISSING{color:var(--red-bright)}
+select.st-LOW{color:var(--amber)} select.st-OK{color:var(--green)}
+.samelast{background:none;border:none;color:var(--gold);font-family:"JetBrains Mono";font-size:10px;
+  letter-spacing:.3px;cursor:pointer;padding:4px 0 0;text-align:left}
+
+.flags{display:grid;gap:9px;margin:14px 0}
+.flag-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid var(--line);border-radius:9px;background:var(--panel-2);padding:11px 12px}
+.flag-row .fl-l{font-family:"Barlow Condensed";font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.seg{display:flex;gap:6px}
+.seg button{min-height:38px;min-width:46px;padding:0 12px;border-radius:7px;border:1px solid var(--line-strong);
+  background:var(--panel);color:var(--muted);font-family:"Barlow Condensed";font-weight:600;font-size:13px;
+  text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.seg button.sel{color:var(--bg);background:var(--gold);border-color:var(--gold)}
+.seg button.sel.no{background:var(--red);border-color:var(--red);color:#fff}
+
+.submit-bar{position:sticky;bottom:0;z-index:15;background:linear-gradient(180deg,transparent,var(--bg) 26%);
+  padding:14px 0 16px;margin-top:14px;display:grid;gap:9px}
+.btn{min-height:var(--tap);border-radius:11px;border:1px solid var(--line-strong);cursor:pointer;
+  font-family:"Barlow Condensed";font-weight:700;font-size:16px;letter-spacing:.8px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+.btn.primary{background:var(--gold);color:#161307;border-color:var(--gold)}
+.btn.ghost{background:var(--panel);color:var(--text)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn.sm{min-height:44px;font-size:13px}
+.btn:active{transform:scale(.99)}
+.saved{font-family:"JetBrains Mono";font-size:10.5px;color:var(--green);text-align:center;min-height:14px}
+
+dialog.report{border:1px solid var(--line-strong);border-radius:14px;background:var(--panel);color:var(--text);
+  max-width:560px;width:92%;padding:0}
+dialog.report::backdrop{background:rgba(0,0,0,.72)}
+dialog.report .rp-h{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+dialog.report .rp-h b{font-family:"Barlow Condensed";font-size:17px;letter-spacing:.5px;text-transform:uppercase}
+dialog.report .rp-x{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+dialog.report pre{margin:0;padding:14px 16px;max-height:44vh;overflow:auto;white-space:pre-wrap;
+  font-family:"JetBrains Mono";font-size:12px;color:var(--text);line-height:1.5}
+dialog.report .rp-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px 16px 16px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- PRINT (Save as PDF of completed sheet) ---------- */
+@media print{
+  :root{--bg:#fff;--text:#000;--panel:#fff;--panel-2:#fff;--muted:#444;--line:#bbb;--line-strong:#888}
+  body{background:#fff;color:#000}
+  #gate,.hud,.submit-bar,.backlink,.samelast,.saved,.toolsbar,footer .row{display:none!important}
+  .item,.flag-row,.field input,.field select{border-color:#999}
+  .item textarea{border-color:#999}
+  .item .row2 input,.item .row2 select{border:1px solid #999}
+  a{color:#000;text-decoration:none}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<div class="wrap">
+
+  <header>
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 20 5v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5Z"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke-width="1.8"/></svg></div>
+    <div class="title">
+      <h1>Officer Field Reference</h1>
+      <p><span class="badge">SHARED · ALL POSTS</span> &nbsp;Site Security · Austin, TX</p>
+    </div>
+  </header>
+
+  <nav class="hud" id="hud" aria-label="Emergency actions"></nav>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="q" type="search" inputmode="search" placeholder="Search contacts, procedures, resources…" aria-label="Search">
+  </div>
+  <div class="toolsbar"><button id="toggleAll">EXPAND ALL</button></div>
+
+  <main id="menu"></main>
+  <div class="noresult" id="noresult">No matches. Clear search to browse sections.</div>
+
+  <div class="note">
+    <b>Life safety comes first.</b> In any emergency, call <b>911</b>. This card is a quick-reference aid — verify addresses and numbers before relying on them, and report anything out of date to your supervisor.
+  </div>
+
+  <footer>
+    <div class="row"><span>FR v1.0</span><span id="rev"></span></div>
+    <div style="margin-top:8px">Restricted operational reference · Austin, TX. Public resource numbers are subject to change.</div>
+  </footer>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   PIN GATE  (lightweight — deterrence, not real security)
+   Change the PIN: open tools/pin-hash.html, type a new 4-digit
+   PIN, copy the digest, and paste it into GATE_PIN_HASH below.
+   Default PIN = 2468
+   ------------------------------------------------------------
+   NOTE: This runs entirely in the browser. Anyone who views the
+   page source can find this hash and brute-force 4 digits. It
+   keeps casual finders out of a lost card; it is NOT a substitute
+   for real access control. For that, put the site behind
+   Cloudflare Access / Netlify password (see README).
+   ============================================================ */
+(function () {
+  var GATE_PIN_HASH = "1a98bba5";           // FNV-1a of "2468"
+  var SESSION_KEY   = "fr_unlocked";
+  var LEN = 4;
+
+  // same hash the generator uses — keep in sync
+  function hash(s){
+    var x = 0x811c9dc5;
+    for (var i=0;i<s.length;i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193); }
+    return (x>>>0).toString(16).padStart(8,"0");
+  }
+  function session(get,val){
+    try { return get ? sessionStorage.getItem(SESSION_KEY) : sessionStorage.setItem(SESSION_KEY,val); }
+    catch(e){ return null; }
+  }
+
+  // already unlocked this session? reveal immediately, no gate.
+  if (session(true) === "1"){ document.documentElement.setAttribute("data-unlocked","1"); return; }
+
+  var entered = "";
+
+  function build(){
+    var g = document.createElement("div");
+    g.id = "gate";
+    g.innerHTML =
+      '<div class="g-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'
+      + '<path d="M12 2 20 5v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5Z"/>'
+      + '<path d="m8.5 12 2.5 2.5 4.5-5" stroke-width="1.8"/></svg></div>'
+      + '<h2>Enter PIN</h2><p class="g-sub">Authorized personnel only</p>'
+      + '<div class="dots" id="g-dots"><i></i><i></i><i></i><i></i></div>'
+      + '<div class="keypad" id="g-pad"></div>'
+      + '<div class="g-foot">Restricted operational reference. Report a lost card immediately.</div>';
+    document.body.appendChild(g);
+
+    var pad = g.querySelector("#g-pad");
+    var keys = ["1","2","3","4","5","6","7","8","9","clr","0","del"];
+    keys.forEach(function(k){
+      var b = document.createElement("button");
+      if (k==="del"){ b.className="ghost"; b.setAttribute("aria-label","Delete");
+        b.innerHTML='<svg viewBox="0 0 24 24"><path d="M21 4H8L2 12l6 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="m15 9-6 6M9 9l6 6"/></svg>'; }
+      else if (k==="clr"){ b.className="ghost"; b.textContent="CLR"; b.setAttribute("aria-label","Clear"); }
+      else { b.textContent=k; }
+      b.type="button";
+      b.addEventListener("click", function(){ press(k); });
+      pad.appendChild(b);
+    });
+
+    document.addEventListener("keydown", onKey);
+  }
+
+  function onKey(e){
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key==="Backspace") press("del");
+    else if (e.key==="Escape") press("clr");
+  }
+
+  function render(err){
+    var dots = document.getElementById("g-dots");
+    if (!dots) return;
+    dots.classList.toggle("err", !!err);
+    var lit = dots.querySelectorAll("i");
+    for (var i=0;i<lit.length;i++) lit[i].classList.toggle("on", i < entered.length);
+  }
+
+  function press(k){
+    if (k==="del"){ entered = entered.slice(0,-1); render(false); return; }
+    if (k==="clr"){ entered = ""; render(false); return; }
+    if (entered.length >= LEN) return;
+    entered += k;
+    render(false);
+    if (entered.length === LEN) setTimeout(check, 120);
+  }
+
+  function check(){
+    if (hash(entered) === GATE_PIN_HASH){
+      session(false,"1");
+      document.removeEventListener("keydown", onKey);
+      var g = document.getElementById("gate");
+      document.documentElement.setAttribute("data-unlocked","1");
+      if (g){ g.style.transition="opacity .25s"; g.style.opacity="0"; setTimeout(function(){ g.remove(); },260); }
+    } else {
+      render(true);
+      if (navigator.vibrate) navigator.vibrate(120);
+      setTimeout(function(){ entered=""; render(false); }, 380);
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
+  else build();
+})();
+
+</script>
+<script>
+/* ================= EDIT CONTENT HERE ================= */
+const EMERGENCY = [
+  {k:'911',  l:'Emergency',       href:'tel:911', cls:'crit'},
+  {k:'988',  l:'Crisis / Vet ▸1', href:'tel:988', cls:'gold'},
+  {k:'DISP', l:'Dispatch',        href:'tel:',    cls:''}   // <- add dispatch number after tel:
+];
+
+const SECTIONS = [
+  {name:'Procedures', entries:[
+    {name:'Post Orders', meta:'Site-specific duties & standing orders', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Incident Reporting', meta:'How & when to file · report template', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Use of Force Policy', meta:'Escalation ladder & documentation', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Emergency Evacuation', meta:'Routes, muster points, roll call', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Radio / Comms Protocol', meta:'Channels, callsigns, 10-codes', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Medical / AED Response', meta:'First-aid steps · AED locations', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Suspicious Package / Person', meta:'Recognize · isolate · report', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Trespass & Ejection', meta:'Criminal trespass procedure', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+  ]},
+
+  {name:'Points of Contact', entries:[
+    {name:'Site Dispatch / Control', meta:'Primary net control', tag:'SET', actions:[{t:'set',label:'SET NUMBER'}]},
+    {name:'Site Supervisor', meta:'On-duty shift lead', tag:'SET', actions:[{t:'set',label:'SET NUMBER'}]},
+    {name:'Account Manager', meta:'Contract point of contact', tag:'SET', actions:[{t:'set',label:'SET NUMBER'}]},
+    {name:'After-Hours On-Call', meta:'24/7 escalation', tag:'SET', actions:[{t:'set',label:'SET NUMBER'}]},
+    {name:'Building Engineering', meta:'Utilities, alarms, access', tag:'SET', actions:[{t:'set',label:'SET NUMBER'}]},
+    {name:'Austin PD — Non-Emergency', meta:'Reports & assistance (no immediate threat)', actions:[
+      {t:'tel',v:'311',label:'311'},{t:'tel',v:'512-974-2000',label:'DIRECT'}]},
+    {name:'Austin PD Headquarters', meta:'715 E 8th St, Austin TX 78701', actions:[
+      {t:'map',v:'715 E 8th St, Austin TX 78701',mode:'dir',label:'MAP'}]},
+    {name:'Poison Control', meta:'24/7 national hotline', actions:[{t:'tel',v:'800-222-1222',label:'CALL'}]},
+  ]},
+
+  {name:'Equipment Locations', entries:[
+    {name:'Medical Kit Inventory', meta:'All kits · tap to count & log restock', actions:[
+      {t:'link',v:'inventory.html',label:'OPEN'}]},
+    {name:'AED', meta:'Set location, floor, nearest landmark', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'Fire Extinguishers', meta:'Nearest units per zone', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'First Aid / Trauma Kit', meta:'Kit + bleeding control', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'Master Keys / Access', meta:'Key box + accountability log', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'Radio Chargers / Spares', meta:'Charging bank & spare batteries', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'Fire Alarm Panel', meta:'Panel + silence/reset procedure', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+    {name:'Utility Shutoffs', meta:'Water / gas / electrical mains', tag:'SET', actions:[{t:'set',label:'SET LOCATION'}]},
+  ]},
+
+  {name:'Area Maps — Downtown Austin', groups:[
+    {label:'Emergency Services', entries:[
+      {name:'Nearest ER (live search)', meta:'Opens maps to closest emergency room', actions:[
+        {t:'map',v:'emergency room',mode:'search',label:'FIND ER'}]},
+      {name:'Dell Seton Medical Center at UT', meta:'1500 Red River St · Level I Trauma / ER', actions:[
+        {t:'map',v:'Dell Seton Medical Center at UT, 1500 Red River St, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Ascension Seton Medical Center Austin', meta:'1201 W 38th St · ER', actions:[
+        {t:'map',v:'Ascension Seton Medical Center Austin, 1201 W 38th St, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Austin PD Headquarters', meta:'715 E 8th St · Non-emergency 3-1-1', actions:[
+        {t:'map',v:'715 E 8th St, Austin TX 78701',mode:'dir',label:'MAP'},{t:'tel',v:'311',label:'311'}]},
+    ]},
+    {label:'Homeless Resources', entries:[
+      {name:'ARCH — Resource Center for the Homeless', meta:'500 E 7th St · adult men, day services, entry point', actions:[
+        {t:'map',v:'Austin Resource Center for the Homeless, 500 E 7th St, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Eighth Street Shelter', meta:'Adjacent to ARCH · women & transgender clients', actions:[
+        {t:'map',v:'8th Street Shelter, Austin TX 78701',mode:'dir',label:'MAP'}]},
+      {name:'Sunrise Homeless Navigation Center', meta:'Shelter placement / waitlist · 8a–8p Mon–Fri', actions:[
+        {t:'tel',v:'512-522-1097',label:'CALL'},{t:'map',v:'Sunrise Homeless Navigation Center, 4430 Menchaca Rd, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Trinity Center', meta:'304 E 7th St · downtown day services', actions:[
+        {t:'map',v:'Trinity Center, 304 E 7th St, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Central Texas Food Bank', meta:'Food assistance referral line', actions:[
+        {t:'tel',v:'512-282-2111',label:'CALL'}]},
+      {name:'2-1-1 Texas', meta:'Housing, food & services navigation · 24/7', actions:[
+        {t:'tel',v:'211',label:'CALL 211'}]},
+    ]},
+    {label:'Veteran Resources', entries:[
+      {name:'Veterans Crisis Line', meta:'24/7 · dial 988 then press 1, or text', actions:[
+        {t:'tel',v:'988',label:'CALL 988'},{t:'sms',v:'838255',label:'TEXT'}]},
+      {name:'VA Vet Center', meta:'Combat vets, Guard, readjustment counseling', actions:[
+        {t:'tel',v:'877-927-8387',label:'CALL'}]},
+      {name:'Austin VA Clinic', meta:'7901 Metropolis Dr · VA outpatient', actions:[
+        {t:'map',v:'Austin VA Clinic, 7901 Metropolis Dr, Austin TX',mode:'dir',label:'MAP'}]},
+      {name:'Texas Veterans Commission', meta:'Benefits, claims & mental health', actions:[
+        {t:'link',v:'https://tvc.texas.gov/',label:'OPEN'}]},
+      {name:'Meals on Wheels — Veteran Services', meta:'Central Texas · food & in-home support', actions:[
+        {t:'tel',v:'512-476-6325',label:'CALL'}]},
+    ]},
+    {label:'Crisis Resources', entries:[
+      {name:'988 Suicide & Crisis Lifeline', meta:'24/7 · call or text 988', actions:[
+        {t:'tel',v:'988',label:'CALL'},{t:'sms',v:'988',label:'TEXT'}]},
+      {name:'Integral Care 24/7 Crisis Hotline', meta:'Travis County behavioral health authority', actions:[
+        {t:'tel',v:'512-472-4357',label:'CALL'}]},
+      {name:'Integral Care — Psychiatric Emergency (walk-in)', meta:'1165 Airport Blvd, 2nd Fl · open 24/7', actions:[
+        {t:'map',v:'Integral Care Psychiatric Emergency Services, 1165 Airport Blvd, Austin TX 78702',mode:'dir',label:'MAP'},
+        {t:'tel',v:'512-472-4357',label:'CALL'}]},
+      {name:'Crisis Text Line', meta:'Text HOME to 741741 · 24/7', actions:[
+        {t:'sms',v:'741741',body:'HOME',label:'TEXT'}]},
+      {name:'SAFEline (domestic / assault)', meta:'SAFE Alliance · call or text', actions:[
+        {t:'tel',v:'512-267-7233',label:'CALL'},{t:'sms',v:'737-888-7233',label:'TEXT'}]},
+      {name:'APD Crisis Intervention Team', meta:'Mental-health call coordination', actions:[
+        {t:'tel',v:'512-854-3450',label:'CALL'}]},
+      {name:'Trevor Project (LGBTQ+ youth)', meta:'24/7 crisis support', actions:[
+        {t:'tel',v:'866-488-7386',label:'CALL'}]},
+    ]},
+  ]},
+
+  {name:'Tools & Apps', entries:[
+    {name:'Medical Kit Inventory', meta:'Count kits & log restock (NFC-linked)', actions:[
+      {t:'link',v:'inventory.html',label:'OPEN'}]},
+    {name:'SITREP Austin', meta:'Live threat / situational dashboard', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'Daily Intelligence Brief', meta:'Current property brief', tag:'SET', actions:[{t:'set',label:'SET LINK'}]},
+    {name:'what3words', meta:'3-word precise location for dispatch', actions:[
+      {t:'link',v:'https://what3words.com/',label:'OPEN'}]},
+    {name:'PulsePoint AED', meta:'Nearby AEDs + CPR alerts', actions:[
+      {t:'link',v:'https://www.pulsepoint.org/',label:'OPEN'}]},
+    {name:'FEMA', meta:'Alerts, shelters, disaster info', actions:[
+      {t:'link',v:'https://www.fema.gov/about/news-multimedia/mobile-products',label:'OPEN'}]},
+    {name:'Red Cross First Aid', meta:'Step-by-step emergency guidance', actions:[
+      {t:'link',v:'https://www.redcross.org/get-help/how-to-prepare-for-emergencies/mobile-apps.html',label:'OPEN'}]},
+    {name:'Austin 311', meta:'Non-emergency city service requests', actions:[
+      {t:'link',v:'https://www.austintexas.gov/department/311',label:'OPEN'}]},
+    {name:'Weather (radar)', meta:'Conditions & severe alerts', actions:[
+      {t:'link',v:'https://www.weather.gov/ewx/',label:'OPEN'}]},
+  ]},
+];
+/* ================= END EDIT CONTENT ================= */
+
+const svg = {
+  chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>',
+  phone:'<svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>',
+  chat:'<svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 20l1.3-4.2A8.4 8.4 0 1 1 21 11.5Z"/></svg>',
+  pin:'<svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  link:'<svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  doc:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'
+};
+const clean = s => (s||'').replace(/[^0-9+]/g,'');
+function mapsURL(v,mode){const q=encodeURIComponent(v);
+  return mode==='dir'?'https://www.google.com/maps/dir/?api=1&destination='+q:'https://www.google.com/maps/search/?api=1&query='+q;}
+function actionHTML(a){
+  if(a.t==='tel'){const cls=clean(a.v)==='911'?'act call dial911':'act call';
+    return `<a class="${cls}" href="tel:${clean(a.v)}">${svg.phone}${a.label||'CALL'}</a>`;}
+  if(a.t==='sms'){const body=a.body?'?&body='+encodeURIComponent(a.body):'';
+    return `<a class="act call" href="sms:${clean(a.v)}${body}">${svg.chat}${a.label||'TEXT'}</a>`;}
+  if(a.t==='map')  return `<a class="act" href="${mapsURL(a.v,a.mode)}" target="_blank" rel="noopener">${svg.pin}${a.label||'MAP'}</a>`;
+  if(a.t==='link') return `<a class="act" href="${a.v}" rel="noopener">${svg.link}${a.label||'OPEN'}</a>`;
+  if(a.t==='doc')  return `<a class="act doc" href="${a.v}" target="_blank" rel="noopener">${svg.doc}${a.label||'PDF'}</a>`;
+  if(a.t==='set')  return `<a class="act set" href="#" onclick="return false">${svg.plus}${a.label||'SET LINK'}</a>`;
+  return '';
+}
+function entryHTML(e){
+  const tag=e.tag?`<span class="tag ${e.tag==='SET'?'set':''}">${e.tag}</span>`:'';
+  const meta=e.meta?`<div class="meta">${e.meta}</div>`:'';
+  const acts=(e.actions||[]).map(actionHTML).join('');
+  return `<div class="entry" data-txt="${(e.name+' '+(e.meta||'')).toLowerCase()}">
+    <div class="top"><div class="name">${e.name}</div>${tag}</div>${meta}
+    <div class="actions">${acts}</div></div>`;
+}
+function sectionHTML(s,i){
+  let inner='',count=0;
+  if(s.groups){s.groups.forEach(g=>{count+=g.entries.length;
+    inner+=`<div class="grp">${g.label}</div>`+g.entries.map(entryHTML).join('');});}
+  else{count=s.entries.length;inner=s.entries.map(entryHTML).join('');}
+  const idx=String(i+1).padStart(2,'0');
+  const open=i===3?' open':'';
+  return `<details class="section"${open}><summary><span class="idx">${idx}</span>
+    <span class="nm">${s.name}</span><span class="cnt">${count}</span>${svg.chev}</summary>
+    <div class="section-body">${inner}</div></details>`;
+}
+document.getElementById('hud').innerHTML=EMERGENCY.map(e=>
+  `<a class="${e.cls}" href="${e.href||'#'}"><span class="k">${e.k}</span><span class="l">${e.l}</span></a>`).join('');
+document.getElementById('menu').innerHTML=SECTIONS.map(sectionHTML).join('');
+document.getElementById('rev').textContent='REV '+new Date().toISOString().slice(0,10);
+
+const q=document.getElementById('q'),noresult=document.getElementById('noresult');
+q.addEventListener('input',()=>{
+  const term=q.value.trim().toLowerCase();let anyHit=false;
+  document.querySelectorAll('.section').forEach(sec=>{
+    let secHit=false;
+    sec.querySelectorAll('.entry').forEach(en=>{const hit=!term||en.dataset.txt.includes(term);
+      en.style.display=hit?'':'none';if(hit)secHit=true;});
+    sec.querySelectorAll('.grp').forEach(g=>{let sib=g.nextElementSibling,vis=false;
+      while(sib&&sib.classList.contains('entry')){if(sib.style.display!=='none')vis=true;sib=sib.nextElementSibling;}
+      g.style.display=vis?'':'none';});
+    sec.style.display=secHit?'':'none';if(term){sec.open=secHit;}if(secHit)anyHit=true;
+  });
+  noresult.style.display=(term&&!anyHit)?'block':'none';
+});
+const btn=document.getElementById('toggleAll');
+btn.addEventListener('click',()=>{const secs=[...document.querySelectorAll('.section')];
+  const anyClosed=secs.some(s=>!s.open);secs.forEach(s=>s.open=anyClosed);
+  btn.textContent=anyClosed?'COLLAPSE ALL':'EXPAND ALL';});
+</script>
+</body>
+</html>

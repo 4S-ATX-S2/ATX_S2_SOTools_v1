@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0B">
+<title>Medical Kit Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Officer Field Reference — shared design system
+   Gold-on-black. Mobile-first. No external deps beyond fonts.
+   ============================================================ */
+:root{
+  --bg:#0A0A0B; --panel:#141417; --panel-2:#1B1B1F;
+  --line:rgba(201,162,75,.16); --line-strong:rgba(201,162,75,.34);
+  --text:#EAE7DF; --muted:#8B897F;
+  --gold:#C9A24B; --gold-bright:#E4BE58;
+  --red:#C4342E; --red-bright:#E0453E;
+  --green:#6FA96B; --amber:#D9A441;
+  --radius:12px; --tap:52px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:"Barlow",system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  padding:0 0 env(safe-area-inset-bottom);
+}
+a{color:var(--gold-bright)}
+.wrap{max-width:640px;margin:0 auto;padding:0 14px}
+
+/* content hidden until gate unlocks (JS sets data-unlocked on <html>) */
+html:not([data-unlocked]) .app{display:none}
+
+/* ---------- HEADER ---------- */
+header{padding:16px 0 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.mark{width:40px;height:40px;flex:0 0 40px;border:1.5px solid var(--gold);border-radius:8px;
+  display:grid;place-items:center;color:var(--gold)}
+.mark svg{width:22px;height:22px}
+.title h1{margin:0;font-family:"Barlow Condensed";font-weight:700;font-size:21px;
+  letter-spacing:.6px;text-transform:uppercase;line-height:1}
+.title p{margin:3px 0 0;font-size:12.5px;color:var(--muted);letter-spacing:.3px}
+.title .badge{color:var(--gold);font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.5px}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-family:"Barlow Condensed";
+  font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:13px;text-decoration:none;
+  color:var(--muted);padding:10px 0}
+.backlink svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ---------- EMERGENCY STRIP ---------- */
+.hud{position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0;
+  border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hud a{display:flex;flex-direction:column;justify-content:center;min-height:var(--tap);
+  text-decoration:none;border-radius:10px;padding:6px 8px;text-align:center;
+  border:1px solid var(--line-strong);color:var(--text);background:var(--panel)}
+.hud a .k{font-family:"Barlow Condensed";font-weight:700;font-size:19px;letter-spacing:.5px;line-height:1}
+.hud a .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:3px}
+.hud a.crit{border-color:rgba(196,52,46,.55);background:rgba(196,52,46,.12)}
+.hud a.crit .k{color:var(--red-bright)} .hud a.crit .l{color:#c99}
+.hud a.gold .k{color:var(--gold-bright)}
+.hud a:active{transform:scale(.97)}
+
+/* ---------- SEARCH ---------- */
+.search{margin:12px 0 4px;position:relative}
+.search input{width:100%;min-height:46px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:10px;padding:0 14px 0 40px;
+  font-family:"Barlow";font-size:15px;outline:none}
+.search input:focus{border-color:var(--line-strong)}
+.search input::placeholder{color:var(--muted)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--muted)}
+.toolsbar{display:flex;justify-content:flex-end;padding:6px 2px 2px}
+.toolsbar button{background:none;border:none;color:var(--gold);font-family:"JetBrains Mono";
+  font-size:11px;letter-spacing:.4px;cursor:pointer;padding:6px 4px}
+
+/* ---------- SECTIONS ---------- */
+.section{margin:10px 0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden}
+.section>summary{list-style:none;cursor:pointer;min-height:var(--tap);display:flex;align-items:center;gap:12px;padding:12px 14px}
+.section>summary::-webkit-details-marker{display:none}
+.section>summary .idx{font-family:"JetBrains Mono";font-size:12px;color:var(--gold);
+  border:1px solid var(--line-strong);border-radius:6px;padding:3px 6px;flex:0 0 auto}
+.section>summary .nm{font-family:"Barlow Condensed";font-weight:600;font-size:18px;
+  letter-spacing:.5px;text-transform:uppercase;flex:1}
+.section>summary .cnt{font-family:"JetBrains Mono";font-size:11px;color:var(--muted)}
+.section>summary .chev{width:16px;height:16px;stroke:var(--muted);transition:transform .2s;flex:0 0 auto}
+.section[open]>summary .chev{transform:rotate(90deg)}
+.section[open]>summary{border-bottom:1px solid var(--line)}
+.section-body{padding:6px 10px 12px}
+.grp{font-family:"Barlow Condensed";font-weight:600;font-size:12.5px;text-transform:uppercase;
+  letter-spacing:1.2px;color:var(--gold);padding:12px 4px 6px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.grp:first-child{padding-top:4px}
+
+/* ---------- ENTRY ---------- */
+.entry{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:11px 12px;margin:7px 0}
+.entry .top{display:flex;align-items:baseline;gap:8px}
+.entry .name{font-weight:600;font-size:15.5px;flex:1;line-height:1.25}
+.entry .tag{font-family:"JetBrains Mono";font-size:9.5px;letter-spacing:.5px;color:var(--gold);
+  border:1px solid var(--line-strong);border-radius:4px;padding:2px 5px;text-transform:uppercase;white-space:nowrap}
+.entry .tag.set{color:var(--muted);border-style:dashed;border-color:var(--muted)}
+.entry .meta{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.act{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 13px;border-radius:8px;
+  text-decoration:none;font-family:"Barlow Condensed";font-weight:600;font-size:14px;letter-spacing:.5px;
+  text-transform:uppercase;border:1px solid var(--line-strong);color:var(--gold-bright);background:rgba(201,162,75,.07);cursor:pointer}
+.act svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.act:active{transform:scale(.97)}
+.act.call{color:#e7d29a} .act.dial911{color:var(--red-bright);border-color:rgba(196,52,46,.5);background:rgba(196,52,46,.1)}
+.act.set{color:var(--muted);border-style:dashed;border-color:var(--muted);background:none}
+.act.doc{color:#cfd6c9;border-color:rgba(160,180,150,.3)}
+
+/* ---------- NOTE / FOOTER ---------- */
+.note{font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--gold);border-radius:8px;padding:10px 12px;margin:14px 0;line-height:1.5}
+.note.warn{border-left-color:var(--red)}
+.note b{color:var(--text);font-weight:600}
+footer{padding:18px 4px 28px;color:var(--muted);font-size:11.5px;line-height:1.6;border-top:1px solid var(--line);margin-top:14px}
+footer .row{display:flex;justify-content:space-between;gap:10px;font-family:"JetBrains Mono"}
+.noresult{display:none;text-align:center;color:var(--muted);padding:24px;font-size:14px}
+
+/* ============================================================
+   PIN GATE
+   ============================================================ */
+#gate{position:fixed;inset:0;z-index:9999;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:22px}
+html[data-unlocked] #gate{display:none}
+#gate .g-mark{width:56px;height:56px;border:1.5px solid var(--gold);border-radius:12px;
+  display:grid;place-items:center;color:var(--gold)}
+#gate .g-mark svg{width:30px;height:30px}
+#gate h2{margin:0;font-family:"Barlow Condensed";font-weight:700;font-size:18px;
+  letter-spacing:1.4px;text-transform:uppercase;color:var(--text)}
+#gate .g-sub{margin:-14px 0 0;font-size:12px;color:var(--muted);letter-spacing:.4px}
+.dots{display:flex;gap:14px}
+.dots i{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--line-strong);background:transparent;transition:all .15s}
+.dots i.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(201,162,75,.5)}
+.dots.err i{border-color:var(--red);animation:shake .35s}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:270px}
+.keypad button{min-height:64px;font-family:"Barlow Condensed";font-weight:600;font-size:26px;color:var(--text);
+  background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;cursor:pointer}
+.keypad button:active{background:var(--panel-2);transform:scale(.96)}
+.keypad button.ghost{background:transparent;border-color:transparent;color:var(--muted);font-size:15px;font-family:"Barlow Condensed";letter-spacing:.5px}
+.keypad button svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:2}
+#gate .g-foot{font-size:11px;color:var(--muted);text-align:center;max-width:280px;line-height:1.5}
+
+/* ============================================================
+   INVENTORY
+   ============================================================ */
+.kit-hub{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.kit-tile{display:flex;flex-direction:column;gap:6px;min-height:88px;justify-content:center;
+  text-decoration:none;color:var(--text);background:var(--panel);border:1px solid var(--line);
+  border-radius:12px;padding:14px 13px}
+.kit-tile:active{transform:scale(.98)}
+.kit-tile .kt-n{font-family:"Barlow Condensed";font-weight:600;font-size:16px;line-height:1.1;text-transform:uppercase;letter-spacing:.4px}
+.kit-tile .kt-c{font-family:"JetBrains Mono";font-size:10.5px;color:var(--muted)}
+.kit-tile.warn{border-color:rgba(196,52,46,.4)}
+
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:1/-1}
+.field label{font-family:"Barlow Condensed";font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.field input,.field select{min-height:44px;background:var(--panel);color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:0 12px;font-family:"Barlow";font-size:15px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--line-strong)}
+
+.progress{display:flex;gap:8px;flex-wrap:wrap;font-family:"JetBrains Mono";font-size:11px;margin:6px 0 4px}
+.progress span{padding:4px 8px;border-radius:6px;border:1px solid var(--line)}
+.progress .ok{color:var(--green)} .progress .low{color:var(--amber)} .progress .bad{color:var(--red-bright)}
+
+.item{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:10px 11px;margin:7px 0}
+.item .ln1{display:flex;align-items:baseline;gap:9px}
+.item .num{font-family:"JetBrains Mono";font-size:11px;color:var(--muted);flex:0 0 auto;min-width:20px}
+.item .inm{font-weight:600;font-size:15px;flex:1;line-height:1.2}
+.item .last{font-family:"JetBrains Mono";font-size:11px;color:var(--muted);white-space:nowrap}
+.item .row2{display:grid;grid-template-columns:84px 1fr 118px;gap:8px;margin-top:9px}
+.item .row2 input,.item .row2 select{min-height:42px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;padding:0 9px;font-family:"Barlow";font-size:14px;outline:none;width:100%}
+.item .row2 .cnt{text-align:center;font-family:"JetBrains Mono";font-size:16px}
+.item textarea{width:100%;margin-top:8px;min-height:0;height:40px;background:var(--panel);color:var(--text);
+  border:1px solid var(--line);border-radius:8px;padding:9px;font-family:"Barlow";font-size:13.5px;outline:none;resize:vertical}
+.item[data-st="EXPIRED"],.item[data-st="MISSING"]{border-color:rgba(196,52,46,.45)}
+.item[data-st="LOW"]{border-color:rgba(217,164,65,.45)}
+.item[data-st="OK"]{border-color:rgba(111,169,107,.35)}
+select.st-EXPIRED,select.st-MISSING{color:var(--red-bright)}
+select.st-LOW{color:var(--amber)} select.st-OK{color:var(--green)}
+.samelast{background:none;border:none;color:var(--gold);font-family:"JetBrains Mono";font-size:10px;
+  letter-spacing:.3px;cursor:pointer;padding:4px 0 0;text-align:left}
+
+.flags{display:grid;gap:9px;margin:14px 0}
+.flag-row{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid var(--line);border-radius:9px;background:var(--panel-2);padding:11px 12px}
+.flag-row .fl-l{font-family:"Barlow Condensed";font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.seg{display:flex;gap:6px}
+.seg button{min-height:38px;min-width:46px;padding:0 12px;border-radius:7px;border:1px solid var(--line-strong);
+  background:var(--panel);color:var(--muted);font-family:"Barlow Condensed";font-weight:600;font-size:13px;
+  text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.seg button.sel{color:var(--bg);background:var(--gold);border-color:var(--gold)}
+.seg button.sel.no{background:var(--red);border-color:var(--red);color:#fff}
+
+.submit-bar{position:sticky;bottom:0;z-index:15;background:linear-gradient(180deg,transparent,var(--bg) 26%);
+  padding:14px 0 16px;margin-top:14px;display:grid;gap:9px}
+.btn{min-height:var(--tap);border-radius:11px;border:1px solid var(--line-strong);cursor:pointer;
+  font-family:"Barlow Condensed";font-weight:700;font-size:16px;letter-spacing:.8px;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+.btn.primary{background:var(--gold);color:#161307;border-color:var(--gold)}
+.btn.ghost{background:var(--panel);color:var(--text)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.btn.sm{min-height:44px;font-size:13px}
+.btn:active{transform:scale(.99)}
+.saved{font-family:"JetBrains Mono";font-size:10.5px;color:var(--green);text-align:center;min-height:14px}
+
+dialog.report{border:1px solid var(--line-strong);border-radius:14px;background:var(--panel);color:var(--text);
+  max-width:560px;width:92%;padding:0}
+dialog.report::backdrop{background:rgba(0,0,0,.72)}
+dialog.report .rp-h{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+dialog.report .rp-h b{font-family:"Barlow Condensed";font-size:17px;letter-spacing:.5px;text-transform:uppercase}
+dialog.report .rp-x{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+dialog.report pre{margin:0;padding:14px 16px;max-height:44vh;overflow:auto;white-space:pre-wrap;
+  font-family:"JetBrains Mono";font-size:12px;color:var(--text);line-height:1.5}
+dialog.report .rp-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px 16px 16px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- PRINT (Save as PDF of completed sheet) ---------- */
+@media print{
+  :root{--bg:#fff;--text:#000;--panel:#fff;--panel-2:#fff;--muted:#444;--line:#bbb;--line-strong:#888}
+  body{background:#fff;color:#000}
+  #gate,.hud,.submit-bar,.backlink,.samelast,.saved,.toolsbar,footer .row{display:none!important}
+  .item,.flag-row,.field input,.field select{border-color:#999}
+  .item textarea{border-color:#999}
+  .item .row2 input,.item .row2 select{border:1px solid #999}
+  a{color:#000;text-decoration:none}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<div class="wrap">
+
+  <a class="backlink" href="index.html"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg> FIELD REFERENCE</a>
+
+  <header>
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M3 12h18" stroke-width="2.2"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg></div>
+    <div class="title">
+      <h1 id="pageTitle">Medical Kit Inventory</h1>
+      <p id="pageSub"><span class="badge">SELECT A KIT</span></p>
+    </div>
+  </header>
+
+  <main id="view"></main>
+
+  <footer>
+    <div class="row"><span>INV v1.0</span><span id="rev"></span></div>
+    <div style="margin-top:8px">On-hand reflects the last recorded count. Verify physically and record earliest expiration for each line item. Report any missing life-safety item (CPR barrier, burn treatment, hemorrhage control) immediately.</div>
+  </footer>
+</div>
+</div>
+
+<dialog class="report" id="reportDlg">
+  <div class="rp-h"><b>Completed Inventory</b><button class="rp-x" id="rpClose" aria-label="Close">×</button></div>
+  <pre id="rpText"></pre>
+  <div class="rp-actions">
+    <button class="btn ghost sm" id="rpCopy">Copy</button>
+    <button class="btn ghost sm" id="rpCsv">Download CSV</button>
+    <button class="btn ghost sm" id="rpJson">Download JSON</button>
+    <button class="btn ghost sm" id="rpEmail">Email</button>
+    <button class="btn ghost sm" id="rpPrint">Print / PDF</button>
+    <button class="btn primary sm" id="rpSend" style="display:none">Submit</button>
+  </div>
+</dialog>
+
+<script>
+/* ============================================================
+   PIN GATE  (lightweight — deterrence, not real security)
+   Change the PIN: open tools/pin-hash.html, type a new 4-digit
+   PIN, copy the digest, and paste it into GATE_PIN_HASH below.
+   Default PIN = 2468
+   ------------------------------------------------------------
+   NOTE: This runs entirely in the browser. Anyone who views the
+   page source can find this hash and brute-force 4 digits. It
+   keeps casual finders out of a lost card; it is NOT a substitute
+   for real access control. For that, put the site behind
+   Cloudflare Access / Netlify password (see README).
+   ============================================================ */
+(function () {
+  var GATE_PIN_HASH = "1a98bba5";           // FNV-1a of "2468"
+  var SESSION_KEY   = "fr_unlocked";
+  var LEN = 4;
+
+  // same hash the generator uses — keep in sync
+  function hash(s){
+    var x = 0x811c9dc5;
+    for (var i=0;i<s.length;i++){ x ^= s.charCodeAt(i); x = Math.imul(x, 0x01000193); }
+    return (x>>>0).toString(16).padStart(8,"0");
+  }
+  function session(get,val){
+    try { return get ? sessionStorage.getItem(SESSION_KEY) : sessionStorage.setItem(SESSION_KEY,val); }
+    catch(e){ return null; }
+  }
+
+  // already unlocked this session? reveal immediately, no gate.
+  if (session(true) === "1"){ document.documentElement.setAttribute("data-unlocked","1"); return; }
+
+  var entered = "";
+
+  function build(){
+    var g = document.createElement("div");
+    g.id = "gate";
+    g.innerHTML =
+      '<div class="g-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'
+      + '<path d="M12 2 20 5v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5Z"/>'
+      + '<path d="m8.5 12 2.5 2.5 4.5-5" stroke-width="1.8"/></svg></div>'
+      + '<h2>Enter PIN</h2><p class="g-sub">Authorized personnel only</p>'
+      + '<div class="dots" id="g-dots"><i></i><i></i><i></i><i></i></div>'
+      + '<div class="keypad" id="g-pad"></div>'
+      + '<div class="g-foot">Restricted operational reference. Report a lost card immediately.</div>';
+    document.body.appendChild(g);
+
+    var pad = g.querySelector("#g-pad");
+    var keys = ["1","2","3","4","5","6","7","8","9","clr","0","del"];
+    keys.forEach(function(k){
+      var b = document.createElement("button");
+      if (k==="del"){ b.className="ghost"; b.setAttribute("aria-label","Delete");
+        b.innerHTML='<svg viewBox="0 0 24 24"><path d="M21 4H8L2 12l6 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="m15 9-6 6M9 9l6 6"/></svg>'; }
+      else if (k==="clr"){ b.className="ghost"; b.textContent="CLR"; b.setAttribute("aria-label","Clear"); }
+      else { b.textContent=k; }
+      b.type="button";
+      b.addEventListener("click", function(){ press(k); });
+      pad.appendChild(b);
+    });
+
+    document.addEventListener("keydown", onKey);
+  }
+
+  function onKey(e){
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key==="Backspace") press("del");
+    else if (e.key==="Escape") press("clr");
+  }
+
+  function render(err){
+    var dots = document.getElementById("g-dots");
+    if (!dots) return;
+    dots.classList.toggle("err", !!err);
+    var lit = dots.querySelectorAll("i");
+    for (var i=0;i<lit.length;i++) lit[i].classList.toggle("on", i < entered.length);
+  }
+
+  function press(k){
+    if (k==="del"){ entered = entered.slice(0,-1); render(false); return; }
+    if (k==="clr"){ entered = ""; render(false); return; }
+    if (entered.length >= LEN) return;
+    entered += k;
+    render(false);
+    if (entered.length === LEN) setTimeout(check, 120);
+  }
+
+  function check(){
+    if (hash(entered) === GATE_PIN_HASH){
+      session(false,"1");
+      document.removeEventListener("keydown", onKey);
+      var g = document.getElementById("gate");
+      document.documentElement.setAttribute("data-unlocked","1");
+      if (g){ g.style.transition="opacity .25s"; g.style.opacity="0"; setTimeout(function(){ g.remove(); },260); }
+    } else {
+      render(true);
+      if (navigator.vibrate) navigator.vibrate(120);
+      setTimeout(function(){ entered=""; render(false); }, 380);
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
+  else build();
+})();
+
+</script>
+<script>
+/* ============================================================
+   MEDICAL KIT DATA
+   `last` = count recorded on the source list (last known on-hand).
+   `req`  = par / required level (null = not set yet; set these to
+            enable automatic LOW flagging).
+   `flag` = pre-existing issue carried over from the source sheet.
+   Add/remove items freely. Kit slug (the object key) is what the
+   NFC tag links to:  inventory.html?kit=<slug>
+   ============================================================ */
+
+/* Where completed inventories are sent. Leave "" to use offline
+   export only (copy / download / print / email). To log centrally,
+   paste a Google Apps Script Web App URL here (see README). */
+const SUBMIT_ENDPOINT = "";
+
+const KIT_ORDER = ["list1","engineering","bnq","roof","spa","kitchen","hskp","frontdesk","fcr"];
+
+const KITS = {
+  list1: {
+    name: "Unlabeled Kit — List 1",
+    warn: "Header was cut off in the source scan. Confirm kit name / location before use.",
+    items: [
+      {n:"Medical tape", last:2},
+      {n:"CPR mask", last:1},
+      {n:"Abdominal compress / gauze", last:3},
+      {n:"Alcohol prep pads", last:20},
+      {n:"BZK wipes", last:6},
+      {n:"Triple antibiotic", last:7},
+      {n:"First aid / burn cream", last:6},
+      {n:"Single-use thermometer", last:18, flag:"EXPIRED", note:"Flagged EXPIRED on source list"},
+      {n:"Single-use thermometer", last:11},
+      {n:"Knuckle bandaid", last:16},
+      {n:"Large bandaid", last:18},
+      {n:"Regular bandaid", last:8},
+      {n:"3x3 gauze pad", last:1},
+      {n:"Blue finger cot", last:26},
+      {n:"White finger cot", last:85}
+    ]
+  },
+  engineering: {
+    name: "Engineering",
+    items: [
+      {n:"4x4 gauze pad", last:11},
+      {n:"2x2 gauze pad", last:8},
+      {n:"Blue knuckle bandaid", last:20},
+      {n:"Knuckle bandaid, regular", last:21},
+      {n:"Large regular bandaid", last:22},
+      {n:"Bandaid, regular", last:50},
+      {n:"Bandaid, regular (2nd count on list)", last:65},
+      {n:"Butterfly closure", last:38},
+      {n:"Blue finger cot", last:14},
+      {n:"Thermometer", last:1},
+      {n:"Shears", last:1},
+      {n:"Tweezers", last:1},
+      {n:"Alcohol prep pad", last:12},
+      {n:"Emergency blanket", last:1},
+      {n:"First aid / burn cream", last:15},
+      {n:"Hydrocortisone cream", last:11},
+      {n:"Triple antibiotic cream", last:10},
+      {n:"Triangle bandage", last:6},
+      {n:"Burn Jel", last:4},
+      {n:"Nitrile gloves", last:"1 box"},
+      {n:"Hand sanitizer", last:null, flag:"MISSING", note:"No count on source list"},
+      {n:"Hydrogen peroxide", last:null, flag:"MISSING", note:"No count on source list"},
+      {n:"CPR mask", last:null, flag:"MISSING", note:"No count on source list"},
+      {n:"Medical tape", last:null, flag:"MISSING", note:"No count on source list"},
+      {n:"4x2 roller gauze", last:1},
+      {n:"2x2 roller gauze", last:3},
+      {n:"Ace wrap", last:2}
+    ]
+  },
+  bnq: {
+    name: "BNQ First Aid",
+    items: [
+      {n:"4x4 gauze pads", last:5},
+      {n:"2x2 gauze pad", last:1},
+      {n:"4x2 gauze roll", last:1},
+      {n:"2x2 gauze roll", last:1},
+      {n:"Rubber gloves (pair)", last:1},
+      {n:"Hydrogen peroxide", last:1},
+      {n:"Antiseptic spray", last:1},
+      {n:"Alcohol prep pads", last:18},
+      {n:"Hydrocortisone sachet", last:4},
+      {n:"Burn Jel pack", last:7},
+      {n:"Blue bandaid", last:52},
+      {n:"Large bandaid", last:3},
+      {n:"Finger cot", last:25},
+      {n:"Ace wrap", last:1},
+      {n:"Medical tape", last:1},
+      {n:"Scissors", last:1},
+      {n:"Tweezers", last:1},
+      {n:"CPR mask", last:1}
+    ]
+  },
+  roof: {
+    name: "Roof / Penthouse",
+    items: [
+      {n:"CPR mask", last:1},
+      {n:"Finger cots", last:5},
+      {n:"Alcohol wipes", last:28},
+      {n:"Burn cream", last:7},
+      {n:"Hydrocortisone pack", last:11},
+      {n:"Regular bandaid", last:11},
+      {n:"Butterfly closure", last:15},
+      {n:"Knuckle bandaid", last:10},
+      {n:"Triple antibiotic", last:9},
+      {n:"Shears", last:1},
+      {n:"Large bandaid", last:10},
+      {n:"Triangle bandage", last:3},
+      {n:'4" gauze roll', last:2},
+      {n:'2" gauze roll', last:1},
+      {n:"Ace wraps", last:4},
+      {n:"Medical tape", last:1},
+      {n:"4x4 gauze pads", last:10},
+      {n:"2x2 gauze pads", last:9},
+      {n:"Gloves", last:5},
+      {n:"Emergency blanket", last:1}
+    ]
+  },
+  spa: {
+    name: "Spa",
+    items: [
+      {n:"Ice pack", last:2},
+      {n:"Knuckle bandaid", last:125},
+      {n:"N95 masks", last:3},
+      {n:"Finger cots", last:48},
+      {n:"2x2 gauze pad", last:3},
+      {n:"4x4 gauze pads", last:108},
+      {n:"Triangle bandage", last:3},
+      {n:"Roll tape", last:1},
+      {n:"CPR barrier", last:1},
+      {n:"Emergency blanket", last:1},
+      {n:'4" gauze roll', last:1},
+      {n:'2" gauze roll', last:1},
+      {n:"Lotion", last:2},
+      {n:"Hand sanitizer", last:2},
+      {n:"Gloves", last:1},
+      {n:"Alcohol pads", last:9},
+      {n:"Large bandaids", last:7},
+      {n:"Burn cream", last:5},
+      {n:"Butterfly closure", last:2},
+      {n:"Bandaid, regular", last:6}
+    ]
+  },
+  kitchen: {
+    name: "Kitchen",
+    items: [
+      {n:"Antiseptic spray", last:1},
+      {n:"Hydrogen peroxide spray", last:1},
+      {n:"Medical tape (roll)", last:1},
+      {n:"Rescue blanket", last:1},
+      {n:"4x4 gauze pad", last:16},
+      {n:"2x2 gauze pad", last:10},
+      {n:"CPR barrier", last:1},
+      {n:"Blue bandaid, regular", last:168},
+      {n:"Blue knuckle bandaid", last:75},
+      {n:"Hydrocortisone pack", last:130},
+      {n:"Triple antibiotic pack", last:90},
+      {n:"Large ice pack", last:2},
+      {n:"Ace wrap", last:1},
+      {n:"Blue finger cot", last:18},
+      {n:"Alcohol pad", last:55},
+      {n:"Burn Jel", last:27},
+      {n:"Burn cream, first aid", last:28}
+    ]
+  },
+  hskp: {
+    name: "Housekeeping (HSKP)",
+    items: [
+      {n:"Isopropyl alcohol", last:1},
+      {n:"Glove", last:1},
+      {n:"Knuckle bandaid", last:28},
+      {n:"Shears", last:1},
+      {n:"4x4 gauze pad", last:5},
+      {n:"2x2 gauze pad", last:3},
+      {n:"Emergency blanket", last:1},
+      {n:"Large bandaid", last:3},
+      {n:"Normal bandaid", last:16},
+      {n:"Closure bandaid", last:158},
+      {n:"Ace wrap", last:1},
+      {n:"Masks", last:21},
+      {n:"Alcohol pad", last:2},
+      {n:"Hydrocortisone", last:17},
+      {n:"Burn Jel", last:2},
+      {n:"Triangle bandage", last:1}
+    ]
+  },
+  frontdesk: {
+    name: "Front Desk Bandaid Kit",
+    items: [
+      {n:"Hydrocortisone", last:10},
+      {n:"2x2 gauze pad", last:1},
+      {n:"Antibiotic ointment", last:6},
+      {n:"First aid / burn cream", last:19},
+      {n:"Safety pins", last:6},
+      {n:"Blister bandaid", last:3},
+      {n:"Disposable thermometer", last:75}
+    ]
+  },
+  fcr: {
+    name: "FCR Med Bag",
+    items: [
+      {n:"Ice packs", last:4},
+      {n:"Ace wraps", last:2},
+      {n:"Tweezers", last:1},
+      {n:"Shears, small", last:1},
+      {n:"Shears, medium", last:1},
+      {n:'Rolled gauze 4"', last:2},
+      {n:'Rolled gauze 2"', last:2},
+      {n:'Gauze pad 2"', last:14},
+      {n:'Gauze pad 4"', last:5},
+      {n:"Rescue blanket", last:1},
+      {n:"Triangle bandage", last:4},
+      {n:"Mask", last:12},
+      {n:"Safety glasses", last:1},
+      {n:"Hydrogen peroxide", last:1},
+      {n:"Antiseptic first aid spray", last:1},
+      {n:"Hand sanitizer", last:1}
+    ]
+  }
+};
+
+</script>
+<script>
+const view = document.getElementById('view');
+document.getElementById('rev').textContent = 'REV ' + new Date().toISOString().slice(0,10);
+const params = new URLSearchParams(location.search);
+const slug = (params.get('kit')||'').toLowerCase();
+
+const svg = {
+  save:'<svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>'
+};
+const draftKey = k => 'inv_draft_' + k;
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+function lsDel(k){try{localStorage.removeItem(k);}catch(e){}}
+
+/* ---------------- HUB ---------------- */
+function renderHub(){
+  document.getElementById('pageTitle').textContent = 'Medical Kit Inventory';
+  document.getElementById('pageSub').innerHTML = '<span class="badge">SELECT A KIT</span>';
+  let html = '<div class="note">Tap a kit to begin a count, or tap the NFC tag on the kit itself. Drafts save automatically on this device.</div><div class="kit-hub">';
+  KIT_ORDER.forEach(k=>{
+    const kit = KITS[k]; if(!kit) return;
+    const d = lsGet(draftKey(k));
+    const status = d ? 'DRAFT SAVED' : (kit.items.length+' items');
+    html += `<a class="kit-tile ${kit.warn?'warn':''}" href="inventory.html?kit=${k}">
+      <span class="kt-n">${kit.name}</span><span class="kt-c">${status}</span></a>`;
+  });
+  html += '</div>';
+  view.innerHTML = html;
+}
+
+/* ---------------- KIT FORM ---------------- */
+function statusFor(item, cnt){
+  if(item.flag==='EXPIRED') return 'EXPIRED';
+  if(item.flag==='MISSING' && (cnt===''||cnt==null)) return 'MISSING';
+  if(cnt==='' || cnt==null) return '';
+  const n = Number(cnt);
+  if(n===0) return 'MISSING';
+  if(item.req!=null && n < item.req) return 'LOW';
+  return 'OK';
+}
+function lastLabel(v){ return (v==null) ? '—' : v; }
+
+function renderKit(k){
+  const kit = KITS[k];
+  if(!kit){ view.innerHTML = '<div class="note warn"><b>Unknown kit.</b> No kit matches “'+k+'”. <a href="inventory.html">Back to kit list.</a></div>'; return; }
+
+  document.getElementById('pageTitle').textContent = kit.name;
+  document.getElementById('pageSub').innerHTML = '<span class="badge">'+kit.items.length+' ITEMS</span> &nbsp;Inventory count';
+
+  const draft = lsGet(draftKey(k)) || {meta:{}, items:{}, flags:{}};
+
+  let html = '';
+  if(kit.warn) html += '<div class="note warn"><b>Confirm before use.</b> '+kit.warn+'</div>';
+
+  html += `<div class="meta-grid">
+    <div class="field"><label>Date inventoried</label><input id="m_date" type="date"></div>
+    <div class="field"><label>Next due</label><input id="m_due" type="date"></div>
+    <div class="field"><label>Inventoried by</label><input id="m_by" type="text" placeholder="Name / initials"></div>
+    <div class="field"><label>Reviewed by</label><input id="m_rev" type="text" placeholder="Name / initials"></div>
+    <div class="field full"><label>Kit ID / Asset #</label><input id="m_id" type="text" placeholder="Optional asset tag"></div>
+  </div>`;
+
+  html += '<div class="progress" id="prog"></div>';
+
+  kit.items.forEach((it,idx)=>{
+    const di = draft.items[idx] || {};
+    const cnt = di.cnt!=null ? di.cnt : '';
+    const exp = di.exp || '';
+    const note = di.note || it.note || '';
+    const st = di.st || statusFor(it, cnt);
+    html += `<div class="item" data-i="${idx}" data-st="${st}">
+      <div class="ln1"><span class="num">${String(idx+1).padStart(2,'0')}</span>
+        <span class="inm">${it.n}</span><span class="last">Last: ${lastLabel(it.last)}</span></div>
+      <div class="row2">
+        <input class="cnt" data-f="cnt" type="number" inputmode="numeric" min="0" placeholder="#" value="${cnt}">
+        <input data-f="exp" type="month" placeholder="Exp" value="${exp}">
+        <select data-f="st" class="st-${st}">
+          ${['','OK','LOW','EXPIRED','MISSING'].map(o=>`<option value="${o}" ${o===st?'selected':''}>${o||'—'}</option>`).join('')}
+        </select>
+      </div>
+      <button class="samelast" data-same="${it.last==null?'':it.last}">= same as last (${lastLabel(it.last)})</button>
+      <textarea data-f="note" placeholder="Notes / action">${note}</textarea>
+    </div>`;
+  });
+
+  // kit-level flags
+  const seg = (id,labels)=>`<div class="seg" data-flag="${id}">`+labels.map(l=>
+    `<button type="button" data-v="${l}" class="${(draft.flags[id]===l)?'sel'+(l==='N'?' no':''):''}">${l}</button>`).join('')+`</div>`;
+  html += `<div class="flags">
+    <div class="flag-row"><span class="fl-l">Kit sealed / tagged</span>${seg('sealed',['Y','N'])}</div>
+    <div class="flag-row"><span class="fl-l">Restock required</span>${seg('restock',['Y','N'])}</div>
+    <div class="flag-row"><span class="fl-l">Expired items removed</span>${seg('expired',['Y','N','N/A'])}</div>
+  </div>`;
+
+  html += `<div class="saved" id="savedMsg"></div>
+    <div class="submit-bar">
+      <button class="btn primary" id="genBtn">${svg.check} Complete & Submit</button>
+      <div class="btn-row">
+        <button class="btn ghost sm" id="saveBtn">${svg.save} Save Draft</button>
+        <button class="btn ghost sm" id="clearBtn">Clear Draft</button>
+      </div>
+    </div>`;
+
+  view.innerHTML = html;
+
+  // hydrate meta
+  ['date','due','by','rev','id'].forEach(f=>{ const el=document.getElementById('m_'+f); if(el && draft.meta[f]!=null) el.value=draft.meta[f]; });
+  if(!document.getElementById('m_date').value) document.getElementById('m_date').value = new Date().toISOString().slice(0,10);
+
+  wireKit(k, kit);
+  updateProgress(kit);
+}
+
+function collect(k, kit){
+  const meta = {};
+  ['date','due','by','rev','id'].forEach(f=>meta[f]=document.getElementById('m_'+f).value);
+  const items = {}, flags = {};
+  document.querySelectorAll('.item').forEach(el=>{
+    const i = el.dataset.i;
+    items[i] = {
+      cnt: el.querySelector('[data-f="cnt"]').value,
+      exp: el.querySelector('[data-f="exp"]').value,
+      st:  el.querySelector('[data-f="st"]').value,
+      note:el.querySelector('[data-f="note"]').value
+    };
+  });
+  document.querySelectorAll('.seg').forEach(s=>{
+    const sel = s.querySelector('button.sel'); flags[s.dataset.flag] = sel ? sel.dataset.v : '';
+  });
+  return {kit:k, kitName:kit.name, meta, items, flags};
+}
+
+function updateProgress(kit){
+  const prog = document.getElementById('prog'); if(!prog) return;
+  let counted=0, low=0, bad=0;
+  document.querySelectorAll('.item').forEach(el=>{
+    const st = el.querySelector('[data-f="st"]').value;
+    const cnt = el.querySelector('[data-f="cnt"]').value;
+    if(cnt!=='' || st==='EXPIRED' || st==='MISSING') counted++;
+    if(st==='LOW') low++;
+    if(st==='EXPIRED'||st==='MISSING') bad++;
+  });
+  prog.innerHTML =
+    `<span>${counted}/${kit.items.length} counted</span>`+
+    `<span class="low">${low} low</span>`+
+    `<span class="bad">${bad} expired/missing</span>`;
+}
+
+let saveTimer=null;
+function wireKit(k, kit){
+  const save = (silent)=>{
+    lsSet(draftKey(k), (({kit,kitName,...r})=>r)(collect(k,kit)));
+    const m=document.getElementById('savedMsg'); if(m && !silent){ m.textContent='Draft saved · '+new Date().toLocaleTimeString(); setTimeout(()=>{if(m.textContent.startsWith('Draft saved'))m.textContent='';},2500); }
+  };
+  const onChange = (e)=>{
+    const item = e.target.closest('.item');
+    if(item){
+      const idx = +item.dataset.i;
+      if(e.target.dataset.f==='cnt'){
+        // recompute status suggestion when count changes (unless user overrode)
+        const sel = item.querySelector('[data-f="st"]');
+        const suggested = statusFor(kit.items[idx], e.target.value);
+        sel.value = suggested; sel.className = 'st-'+suggested;
+        item.dataset.st = suggested;
+      }
+      if(e.target.dataset.f==='st'){ item.dataset.st=e.target.value; e.target.className='st-'+e.target.value; }
+    }
+    updateProgress(kit);
+    clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true), 500);
+  };
+  view.addEventListener('input', onChange);
+  view.addEventListener('change', onChange);
+
+  // "same as last" buttons
+  view.querySelectorAll('.samelast').forEach(b=>b.addEventListener('click',()=>{
+    const item=b.closest('.item'); const c=item.querySelector('[data-f="cnt"]');
+    c.value=b.dataset.same; c.dispatchEvent(new Event('input',{bubbles:true}));
+  }));
+
+  // segmented flags
+  view.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+    b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('sel','no'));
+    b.classList.add('sel'); if(b.dataset.v==='N') b.classList.add('no');
+    clearTimeout(saveTimer); saveTimer=setTimeout(()=>save(true),300);
+  }));
+
+  document.getElementById('saveBtn').addEventListener('click',()=>save(false));
+  document.getElementById('clearBtn').addEventListener('click',()=>{
+    if(confirm('Clear this draft on this device?')){ lsDel(draftKey(k)); renderKit(k); }
+  });
+  document.getElementById('genBtn').addEventListener('click',()=>openReport(collect(k,kit),kit));
+}
+
+/* ---------------- REPORT ---------------- */
+function buildText(data, kit){
+  const m=data.meta, L=[];
+  L.push('MEDICAL KIT INVENTORY');
+  L.push(kit.name.toUpperCase());
+  L.push('----------------------------------------');
+  L.push('Date inventoried : '+(m.date||'—'));
+  L.push('Inventoried by   : '+(m.by||'—'));
+  L.push('Reviewed by      : '+(m.rev||'—'));
+  L.push('Kit ID / Asset # : '+(m.id||'—'));
+  L.push('Next due         : '+(m.due||'—'));
+  L.push('');
+  L.push('#  ITEM                             ON-HAND  EXP      STATUS   NOTES');
+  kit.items.forEach((it,i)=>{
+    const d=data.items[i]||{};
+    const name=(it.n).slice(0,30).padEnd(30);
+    const cnt=String(d.cnt||'').padStart(6);
+    const exp=(d.exp||'').padEnd(8);
+    const st=(d.st||'').padEnd(8);
+    L.push(String(i+1).padStart(2)+' '+name+' '+cnt+'  '+exp+' '+st+' '+(d.note||''));
+  });
+  L.push('');
+  L.push('Kit sealed / tagged   : '+(data.flags.sealed||'—'));
+  L.push('Restock required      : '+(data.flags.restock||'—'));
+  L.push('Expired items removed : '+(data.flags.expired||'—'));
+  // restock summary
+  const restock=kit.items.map((it,i)=>({it,d:data.items[i]||{}}))
+    .filter(x=>x.d.st==='LOW'||x.d.st==='MISSING'||x.d.st==='EXPIRED');
+  if(restock.length){
+    L.push(''); L.push('RESTOCK / ACTION:');
+    restock.forEach(x=>L.push('  • '+x.it.n+' ['+(x.d.st)+'] '+(x.d.note||'')));
+  }
+  return L.join('\n');
+}
+function buildCSV(data, kit){
+  const rows=[['#','Item','LastKnown','OnHand','Exp','Status','Notes']];
+  kit.items.forEach((it,i)=>{const d=data.items[i]||{};
+    rows.push([i+1,it.n,(it.last==null?'':it.last),(d.cnt||''),(d.exp||''),(d.st||''),(d.note||'')]);});
+  const esc=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const meta=`Kit,${esc(kit.name)}\nDate,${esc(data.meta.date||'')}\nBy,${esc(data.meta.by||'')}\nReviewed,${esc(data.meta.rev||'')}\nKitID,${esc(data.meta.id||'')}\nSealed,${esc(data.flags.sealed||'')}\nRestock,${esc(data.flags.restock||'')}\nExpiredRemoved,${esc(data.flags.expired||'')}\n\n`;
+  return meta+rows.map(r=>r.map(esc).join(',')).join('\n');
+}
+function dl(name, text, type){
+  const blob=new Blob([text],{type:type||'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function fname(data, ext){
+  return (data.kit+'_inventory_'+(data.meta.date||new Date().toISOString().slice(0,10))).replace(/[^a-z0-9_\-]/gi,'')+'.'+ext;
+}
+
+let CURRENT=null;
+function openReport(data, kit){
+  CURRENT={data,kit};
+  const text=buildText(data,kit);
+  document.getElementById('rpText').textContent=text;
+  const send=document.getElementById('rpSend');
+  send.style.display = (typeof SUBMIT_ENDPOINT!=='undefined' && SUBMIT_ENDPOINT) ? '' : 'none';
+  document.getElementById('reportDlg').showModal();
+}
+document.getElementById('rpClose').addEventListener('click',()=>document.getElementById('reportDlg').close());
+document.getElementById('rpCopy').addEventListener('click',async(e)=>{
+  const t=document.getElementById('rpText').textContent;
+  try{ await navigator.clipboard.writeText(t); e.target.textContent='Copied ✓'; }
+  catch(_){ const r=document.createRange();r.selectNode(document.getElementById('rpText'));
+    getSelection().removeAllRanges();getSelection().addRange(r);e.target.textContent='Selected — ⌘/Ctrl+C'; }
+  setTimeout(()=>e.target.textContent='Copy',1800);
+});
+document.getElementById('rpCsv').addEventListener('click',()=>dl(fname(CURRENT.data,'csv'),buildCSV(CURRENT.data,CURRENT.kit),'text/csv'));
+document.getElementById('rpJson').addEventListener('click',()=>dl(fname(CURRENT.data,'json'),JSON.stringify(CURRENT.data,null,2),'application/json'));
+document.getElementById('rpEmail').addEventListener('click',()=>{
+  const s='Kit Inventory — '+CURRENT.kit.name+' — '+(CURRENT.data.meta.date||'');
+  const b=buildText(CURRENT.data,CURRENT.kit);
+  location.href='mailto:?subject='+encodeURIComponent(s)+'&body='+encodeURIComponent(b);
+});
+document.getElementById('rpPrint').addEventListener('click',()=>{document.getElementById('reportDlg').close();window.print();});
+document.getElementById('rpSend').addEventListener('click',async(e)=>{
+  if(!SUBMIT_ENDPOINT) return;
+  e.target.textContent='Sending…';
+  try{
+    await fetch(SUBMIT_ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(CURRENT.data)});
+    e.target.textContent='Submitted ✓'; lsDel(draftKey(CURRENT.data.kit));
+    setTimeout(()=>document.getElementById('reportDlg').close(),900);
+  }catch(err){ e.target.textContent='Failed — use download'; }
+});
+
+/* ---------------- ROUTE ---------------- */
+if(slug) renderKit(slug); else renderHub();
+</script>
+</body>
+</html>
